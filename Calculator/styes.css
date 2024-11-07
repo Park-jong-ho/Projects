@@ -1,0 +1,117 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+html, body{
+    height: 100%;
+    margin: 0;
+}
+
+body{
+    display: flex;
+    align-items: center;
+    justify-items: center;
+}
+.calculator-container{
+    width: 100%;
+    max-width: 700px;
+    min-width: 700px;
+    height: 90%;
+    max-height: 750px;
+    min-height: 750px;
+    border: 2px solid black;
+    margin: 30px auto;
+    padding: 5px;
+    background-color: white;
+    display: flex;
+    flex-direction: column; /* 새로 배치를 하기 위해서 */
+}
+.red-button{
+    color: white;
+    background-color: rgba(254, 1, 1, 0.727);
+    margin: 2px; /* 서로의 간격 */
+
+}
+.yellow-button{
+    color: white;
+    background-color: rgba(224, 199, 10, 0.836);
+    margin: 2px; /* 서로의 간격 */
+}
+.green-button{
+    color: white;
+    background-color: rgb(50, 192, 50);
+    margin: 2px; /* 서로의 간격 */
+
+}
+.display{
+    width: 660px;
+    margin: 5px auto 5px auto;
+    max-height: 150px;
+    min-height: 150px;
+    padding: 5px;
+    height: 150px;
+    border: 2px solid black;
+    text-align: right;
+}
+.buttons{
+    width: 660px;
+    margin: 5px auto 20px auto;
+    height: 500px;
+    max-height: 500px;
+    min-height: 500px;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.red-button, .yellow-button, .green-button{
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer; /* 마우스 올리면 손가락으로 변경 */
+}
+.top-button{
+    display: flex;
+    justify-content: flex-start; /* 아이템들을 시작점으로 정렬 */
+    margin: 25px 1px 1px 40px;
+}
+.result{
+    font-size: 60px;
+    padding: 30px;
+    text-align: right;
+}
+.first, .second, .third, .fourth, .fiveth{
+    display: flex;
+    flex-direction: row;
+    background-color: rgb(207, 206, 206);
+    cursor: pointer; /* 마우스 올리면 손가락으로 변경 */
+    flex-grow: 1; /* 남는 새로열 채우기 */
+}
+.button{
+    display: flex;
+    border: 1px solid black;
+    justify-content: center;
+    align-items: center;
+    /* flex-grow: 1; */
+    width: 165px;
+    font-size: 25px;
+    padding: 10px;
+}
+#zero-button{
+    width: 330px;
+}
+.button:hover{
+    background-color: gray;
+}
+.button:active{
+    background-color: rgb(73, 71, 71);
+}
+/* grow 1로 해보고 싶지만 각 층마다 칸의 크기가 달라져 실패*/
+/* .fiveth :nth-child(1) {flex-grow: 2;} 비율로 맞추기 위해서 */
+/* .fiveth :nth-child(2) {flex-grow: 1;} */
+/* .fiveth :nth-child(3) {flex-grow: 1;} */
+
