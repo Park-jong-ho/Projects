@@ -1,156 +1,141 @@
-import { useState, useRef, useEffect } from "react"
-import './App.css'
+import { useState, useEffect, useRef } from "react";
+import "./App.css";
+import Timer from "./components/Timer";
+import StopWatch from "./components/StopWatch";
+import Advice from "./components/Advice";
+import useFetch from "./hook/useFecth";
+import Clock from "./components/Clock";
+import formatTime from "./util/formatTime";
 
 function App() {
-  const [todo, setTodo] = useState([{
-    id: Number(new Date()), content:'안녕하세요'
-  }])
-
-  return (
-    <>
-    <Clock />
-    <Timer />
-    <StopWatch />
-      <TodoInput setTodo={setTodo} />
-      <TodoList todo={todo} setTodo={setTodo}/>
-    </>
-  )
-}
-
-const Clock = () => {
-  const [time, setTime] = useState(new Date())
+  const url = "http://localhost:3000/todos";
+  const { isLoading, data, error } = useFetch(url);
+  const [todo, setTodo] = useState(null);
+  const [time, setTime] = useState(0);
+  const [isTimer, setIsTimer] = useState(true);
+  const [currentTodo, setCurrentTodo] = useState(null);
 
   useEffect(() => {
-    setInterval(() => {
-      setTime(new Date())
-    }, 1000)
-
-
-  }, [])
-
-  return (
-    <>
-      <div>
-        {time.toLocaleTimeString()}
-      </div>
-    </>
-  )
-}
-
-const formatTime = (seconds) => {
-  const timeString = `${String(Math.floor(seconds / 3600)).padStart(2, "0")}:${String(Math.floor((seconds % 3600) / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`
-
-  return timeString
-} 
-
-const StopWatch = () => {
-  const [time, setTime] = useState(0)
-  const [isOn, setIsOn] = useState(false)
-  const timerRef = useRef(null)
+    setTime(0);
+  }, [isTimer]);
 
   useEffect(() => {
-    if(isOn === true) {
-      const timerId = setInterval(() => {
-        setTime((prev) => prev + 1)
-      }, 1000);
-      timerRef.current = timerId
-    }else {
-      clearInterval(timerRef.current)
+    if (data) {
+      console.log(data);
+      setTodo(data); // 데이터를 상태에 저장
     }
-  }, [isOn])
-
-  return (
-    <>
-      <div>
-        {formatTime(time)}
-        <button onClick={() => setIsOn((prev) => !prev)}>{isOn ? "끄기" : "켜기"}</button>
-        <button onClick={() => {
-          setTime(0)
-          setIsOn(false)
-        }}>
-          리셋</button>
-      </div>
-    </>
-  )
-}
-
-const Timer = () => {
-  const [startTime, setStartTime] = useState(0)
-  const [isOn, setIsOn] = useState(false)
-  const [time, setTime] = useState(0)
-  const timerRef = useRef(null)
+  }, [data]);
 
   useEffect(() => {
-    if (isOn && time > 0) {
-    const timerId = setInterval(() => {
-      setTime(prev => prev - 1)
-    }, 1000)
-    timerRef.current = timerId
-  }else if (!isOn || time == 0) {
-    clearInterval[timerRef.current]
-  }
-  return () => clearInterval(timerRef.current)
-  }, [isOn, time])
+    if (todo) {
+      let newTime = todo.find((el) => el.id === currentTodo)?.time + 1;
+      if (newTime)
+        fetch(`http://localhost:3000/todos/${currentTodo}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            time: newTime,
+          }),
+        })
+          .then((res) => res.json())
+          .then((res) =>
+            setTodo((prev) =>
+              prev.map((el) => (el.id === currentTodo ? res : el))
+            )
+          );
+    }
+  }, [time]);
 
-  return (
-    <>
-      <div>
-        <div>
-          {time ? formatTime(time) : formatTime(startTime)}
-          <button onClick={() => {
-            setIsOn(true)
-            setTime(time ? time : startTime)
-            setStartTime(0)
-            }}>시작</button>
-          <button onClick={() => setIsOn(false)}>정지</button>
-          <button onClick={() => {
-            setTime(0)
-            setIsOn(false)
-          }}>리셋</button>
-        </div>
-        <input type="range" value={startTime} min="0" max='3600' step="30" onChange={(event) => 
-          setStartTime(event.target.value)
-        }/>
-      </div>
-    </>
-  )
+  if (isLoading) return <div>Loading...</div>;
+  else
+    return (
+      <>
+        <h1>TODO LIST</h1>
+        <Clock />
+        <Advice />
+        <button onClick={() => setIsTimer((prev) => !prev)}>
+          {isTimer ? "스톱워치로 변경" : "타이머로 변경"}
+        </button>
+        {isTimer ? (
+          <Timer time={time} setTime={setTime} />
+        ) : (
+          <StopWatch time={time} setTime={setTime} />
+        )}
+        <TodoInput setTodo={setTodo} />
+        <TodoList
+          todo={todo}
+          setTodo={setTodo}
+          currentTodo={currentTodo}
+          setCurrentTodo={setCurrentTodo}
+        />
+      </>
+    );
 }
 
 const TodoInput = ({ setTodo }) => {
-  const inputRef = useRef(null)
-  const addTodo = () => {
-    const newTodo = {
-      id: Number(new Date()),
-      content: inputRef.current.value
-    }
-    setTodo((prev) => [...prev, newTodo])
-  }
-  
+  const inputRef = useRef(null);
   return (
-    <>
-      <input ref={inputRef}/>
-      <button onClick={addTodo}>추가</button>
-    </>
-  )
-}
+    <section>
+      <input ref={inputRef} type="text" />
+      <button
+        onClick={() =>
+          fetch("http://localhost:3000/todos", {
+            method: "POST",
+            body: JSON.stringify({
+              content: inputRef.current.value,
+              time: 0,
+            }),
+          })
+            .then((res) => res.json())
+            .then((res) => setTodo((prev) => [...prev, res]))
+        }
+      >
+        추가
+      </button>
+    </section>
+  );
+};
 
-const TodoList = ({ todo, setTodo }) => {
+const TodoList = ({ todo, setTodo, currentTodo, setCurrentTodo }) => {
   return (
     <ul>
-      {todo.map((el) => (
-        <Todo key={todo.id} todo={el} setTodo={setTodo}/>
-        ))}
+      {todo?.map((el) => (
+        <Todo
+          key={el.id}
+          todo={el}
+          setTodo={setTodo}
+          currentTodo={currentTodo}
+          setCurrentTodo={setCurrentTodo}
+        />
+      ))}
     </ul>
-  )
-}
+  );
+};
 
-const Todo = ({ todo, setTodo }) => {
+const Todo = ({ todo, setTodo, currentTodo, setCurrentTodo }) => {
+  console.log(todo);
   return (
-    <li>{todo.content}
-    <button onClick={() => {
-      setTodo(prev => prev.filter(el => el.id !== todo.id ))
-    }}>삭제</button>
+    <li className={todo.id === currentTodo ? "current" : ""}>
+      <div>
+        <h2>{todo.content}</h2>
+        <div>소모시간 : {formatTime(todo.time)}</div>
+      </div>
+      <div>
+        <button onClick={() => setCurrentTodo(todo.id)}>할일 하기!</button>
+        <button
+          onClick={() =>
+            fetch(`http://localhost:3000/todos/${todo.id}`, {
+              method: "DELETE",
+            }).then((res) => {
+              if (res.ok)
+                setTodo((prev) => prev.filter((el) => el.id !== todo.id));
+            })
+          }
+        >
+          삭제
+        </button>
+      </div>
     </li>
-  )
-}
-export default App
+  );
+};
+
+export default App;
